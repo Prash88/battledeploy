@@ -1,0 +1,30 @@
+#button-facebook_ {
+	display: block; /* 'convert' <a> to <div> */
+	position:absolute;
+	left:400px;
+	top:515px;
+	width:160px;
+	height:26px;
+	background-position: center top;
+	background-repeat: no-repeat;
+	background-image:url('../images/button_facebook.jpg');
+}
+#button-facebook_:hover{
+	background-image:url('../images/button_facebook_active.jpg');
+}
+
+#button-twitter_ {
+	display: block; /* 'convert' <a> to <div> */
+	position:absolute;
+	left:400px;
+	top:549px;
+	width:158px;
+	height:28px;
+	background-position: center top;
+	background-repeat: no-repeat;
+	background-image:url('../images/button_twitter.jpg');
+}
+
+#button-twitter_:hover{
+	background-image:url('../images/button_twitter_active.jpg');
+}
