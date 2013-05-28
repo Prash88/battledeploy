@@ -1,3 +1,4 @@
+<!DOCTYPE HTML>
 <html>
 
 <head>
@@ -11,13 +12,13 @@
 <script type="text/javascript" src="/scripts/Helper.js"></script>
 <script type="text/javascript" src="/scripts/Phonetroller.js"></script>
 
-<link type="text/css" rel="stylesheet" href="styles/Main.css?2" />
+<link type="text/css" rel="stylesheet" href="bootstrap/css/bootstarp.css" />
 
 
 </head>
 
 <body>
-
+<script src="bootstrap/js/bootstrap.js"> </script>
 <div id="login_screen">
 
 	<p>Connect with Facebook or Twitter.</p>
