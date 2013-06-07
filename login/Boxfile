@@ -1,0 +1,11 @@
+web1:
+  name: my-app
+  php_extensions: [mcrypt, mysqli, mysql, mbstring]
+  after_build:
+    # move pagoda config file to app/config
+    - "mv pagoda/database.php application/config/database.php"
+  shared_writable_dirs: 
+    - application/cache
+    - assets/uploads
+db1:
+  type: mysql
