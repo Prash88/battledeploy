@@ -1,3 +1,5 @@
+<?php $this->load->view('includes/header'); ?>
+
 <?php
 if ($use_username) {
 	$username = array(
@@ -36,7 +38,8 @@ $captcha = array(
 );
 ?>
 <?php echo form_open($this->uri->uri_string()); ?>
-<table>
+<h2>Enter your details to sign up: </h2>
+<table class="span5 center-table">
 	<?php if ($use_username) { ?>
 	<tr>
 		<td><?php echo form_label('Username', $username['id']); ?></td>
@@ -98,3 +101,5 @@ $captcha = array(
 </table>
 <?php echo form_submit('register', 'Register'); ?>
 <?php echo form_close(); ?>
+
+<?php $this->load->view('includes/footer'); ?>

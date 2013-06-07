@@ -1,3 +1,5 @@
+<?php $this->load->view('includes/header'); ?>
+
 <?php
 $login = array(
 	'name'	=> 'login',
@@ -7,7 +9,7 @@ $login = array(
 	'size'	=> 30,
 );
 if ($login_by_username AND $login_by_email) {
-	$login_label = 'Email or login';
+	$login_label = 'Email';
 } else if ($login_by_username) {
 	$login_label = 'Login';
 } else {
@@ -32,7 +34,10 @@ $captcha = array(
 );
 ?>
 <?php echo form_open($this->uri->uri_string()); ?>
-<table class="bordered-table">
+    
+<h2>Enter your credentials to login: </h2>
+
+<table class="span5 center-table">
 	<tr>
 		<td><?php echo form_label($login_label, $login['id']); ?></td>
 		<td><?php echo form_input($login); ?></td>
@@ -84,10 +89,14 @@ $captcha = array(
 		<td colspan="3">
 			<?php echo form_checkbox($remember); ?>
 			<?php echo form_label('Remember me', $remember['id']); ?>
-			<?php echo anchor('/auth/forgot_password/', 'Forgot password'); ?>
-			<?php if ($this->config->item('allow_registration', 'tank_auth')) echo anchor('/auth/register/', 'Register'); ?>
+			<?php echo anchor('/auth/forgot_password/', 'Forgot password');?> |
+	
+			<?php if ($this->config->item('allow_registration', 'tank_auth')) echo anchor('/auth/register/', 'Sign Up'); ?>
 		</td>
 	</tr>
 </table>
-<?php echo form_submit('submit', 'Let me in'); ?>
+
+<?php echo form_submit('submit', 'Sign In'); ?>
 <?php echo form_close(); ?>
+
+<?php $this->load->view('includes/footer'); ?>

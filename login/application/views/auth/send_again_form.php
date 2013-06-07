@@ -1,3 +1,5 @@
+<?php $this->load->view('includes/header'); ?>
+
 <?php
 $email = array(
 	'name'	=> 'email',
@@ -17,3 +19,5 @@ $email = array(
 </table>
 <?php echo form_submit('send', 'Send'); ?>
 <?php echo form_close(); ?>
+
+<?php $this->load->view('includes/footer'); ?>
