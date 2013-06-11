@@ -13,14 +13,12 @@
   <!-- Le styles -->
   <link href="<?=base_url('../css/bootstrap.css'); ?>" rel="stylesheet" type="text/css">
   <link href="<?=base_url('../css/bootstrap-responsive.css'); ?>" rel="stylesheet" type="text/css">
-  <link href="<?=base_url('../css/yourcontacts.css'); ?>" rel="stylesheet" type="text/css">
-  <link href="<?=base_url('../css/tablesorter.css'); ?>" rel="stylesheet" type="text/css">
   <!-- Le fav and touch icons -->
   <link href="<?=base_url('../css/ico/favicon.ico'); ?>" rel="shortcut icon">
 </head>
 <body>
-<div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar navbar-fixed-top">
+
+<div class="navbar navbar-static-top">
         <div class="navbar-inner">
             <div class="container">
                 <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -43,4 +41,18 @@
             </div>
         </div>
     </div>
-    </div>
+
+    <script src="../../../js/jquery-1.9.1.min.js"></script>
+    <script src="../../../js/jquery.js"></script>
+    <script src="../../../js/bootstrap-transition.js"></script>
+    <script src="../../../js/bootstrap-alert.js"></script>
+    <script src="../../../js/bootstrap-modal.js"></script>
+    <script src="../../../js/bootstrap-dropdown.js"></script>
+    <script src="../../../js/bootstrap-scrollspy.js"></script>
+    <script src="../../../js/bootstrap-tab.js"></script>
+    <script src="../../../js/bootstrap-tooltip.js"></script>
+    <script src="../../../js/bootstrap-popover.js"></script>
+    <script src="../../../js/bootstrap-button.js"></script>
+    <script src="../../../js/bootstrap-collapse.js"></script>
+    <script src="../../../js/bootstrap-carousel.js"></script>
+    <script src="../../../js/bootstrap-typeahead.js"></script>

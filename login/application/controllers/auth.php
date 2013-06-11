@@ -23,6 +23,22 @@ class Auth extends CI_Controller
 	}
 
 	/**
+	 * Is user logged in
+	 *
+	 * @return bool
+	 */
+	function login_check()
+	{
+		if ($this->tank_auth->is_logged_in()) {	
+			echo "YES";
+			return "YES";
+		}
+		else {
+			echo "NO";
+			return "NO";
+		}
+	}
+	/**
 	 * Login user on the site
 	 *
 	 * @return void
