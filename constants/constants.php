@@ -1,10 +1,10 @@
 <?php
 
 //base in operating system -- change 'netid' to match your ISU username
-define ("REL_BASE", $_SERVER['DOCUMENT_ROOT'] . "/HCI573/battleship/");
+define ("REL_BASE", $_SERVER['DOCUMENT_ROOT'] . "/HCI573/GitHub/battledeploy/");
 
 //base URL of site
-define ("BASE", "http://".$_SERVER['HTTP_HOST']."/HCI573/battleship/");
+define ("BASE", "http://".$_SERVER['HTTP_HOST']."/HCI573/GitHub/battledeploy/");
 
 define("USERS", "users");
 
@@ -54,8 +54,10 @@ function return_meta($title=''){
 	$meta .= '<head>';
 	$meta .= '	<!-- add stylesheet -->';
 	//$meta .= ' <link href="'.BASE.'includes/css/style.css" rel="stylesheet" type="text/css">';
+	$meta .= ' <link href="'.BASE.'includes/css/style.css" rel="stylesheet" type="text/css">';
 	$meta .= ' <link href="'.BASE.'includes/css/bootstrap.css" rel="stylesheet" type="text/css">';
 	$meta .= ' <link href="'.BASE.'includes/css/bootstrap-responsive.css" rel="stylesheet" type="text/css">';
+	
 	
 	$meta .= '	<!-- add link to jquery library -->';
 	$meta .= '	<script src="'.BASE.'includes/js/jquery-1.9.1.min.js"></script>';
