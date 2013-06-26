@@ -1,15 +1,36 @@
+/* login items */
+
+
+
+
+/*register items*/
+/*allign to the center of the page*/
+#register_form, #login_form{
+	padding-left: 200px
+}
+
+#register_submit, #login_submit{
+	display: block;
+	margin-left: 70px;
+}
+
+/*Error div*/
+#error{
+	color: red;
+}
+
+/*Success div */
+#success{
+	color: green;
+}
+
 input{
 	display: block;
 	margin: auto 220px 10px;
 }
 
 input[value]{
-	color: #B8B8B8; 
-}
-
-#register_submit{
-	width: 100px;
-	margin-left: 245px;
+	color: #F1F1F1; 
 }
 
 #page-wrap{
@@ -34,7 +55,9 @@ input[value]{
 	min-height: 200px;
 }
 
-//Gameplay
+
+
+/*Gameplay*/
 #table-opponent-board{
 	background: url('../images/ocean.jpg') center no-repeat;
 }

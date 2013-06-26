@@ -2,7 +2,7 @@ $(function() //function that gets called whenever the document is loaded
 {
 	var boardCellBgColor = 'white';
 	var boardCellBgColorActive = '#3366CC';
-
+/*
 	$("td").click(function(){
 		$(this).css("background-color", "");
 		$(this).toggleClass("boardCellActive").mouseleave();
@@ -21,7 +21,7 @@ $(function() //function that gets called whenever the document is loaded
 							"border": ""});
 		}
 	});
-
+*/
 	
 	
 });
