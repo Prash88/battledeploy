@@ -67,7 +67,9 @@
 
 		if(empty($err))
 		{
-			echo "<b>login.php - no errors about to insert user</b>";
+			if(DEBUG){
+				echo "<b>login.php - no errors about to insert user</b>";
+			}
 			$password = hash_pass($password);
 
 			$q1 = mysql_query("INSERT INTO ".USERS." (user_name, pwd, email, date, user_ip, activation_code) VALUES ('$username', '$password', AES_ENCRYPT('$email', '$salt'), '$date', '$user_ip', '$activation_code')", $link) or die("Unable to insert data");
@@ -84,7 +86,7 @@
 			$msg = "Registration successful!";
 			
 			//After completion of registration, redirect user to login
-			header("Location: ".BASE."/login.php");
+			header("Location: ".BASE."/login.php?msg=".$msg);
 
 			//Build a message to email for confirmation
 			/*$message = "<p>Hi ".$fullname."!</p>
@@ -129,7 +131,8 @@
 		<div id="page-wrap">
 			
 			<div id="header-wrap">
-				<h1>Battleship</h1>
+				<!-- Get the header -->
+				<?php getHeader(); ?>
 			</div>
 			
 			<div id="nav-wrap">

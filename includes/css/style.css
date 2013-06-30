@@ -1,8 +1,5 @@
 /* login items */
 
-
-
-
 /*register items*/
 /*allign to the center of the page*/
 #register_form, #login_form{
@@ -41,6 +38,15 @@ input[value]{
 	box-shadow: 0px 0px 50px rgb(196, 194, 194);
 }
 
+/*game content page - large layout*/
+#game-page-wrap{
+	margin: 0 auto;
+	width: 1100px;
+	vertical-align: center;
+	border: 1px solid rgb(207, 207, 207);
+	box-shadow: 0px 0px 50px rgb(196, 194, 194);
+}
+
 #header-wrap{
 	display: block;
 	width: 100%;
@@ -48,13 +54,13 @@ input[value]{
 	text-align: center;
 }
 
+
 /*content style*/
 #content-wrap{
 	display: inline-block;
 	width: 100%;
 	min-height: 200px;
 }
-
 
 
 /*Gameplay*/

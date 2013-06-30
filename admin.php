@@ -71,7 +71,8 @@
 		<div id="page-wrap">
 			
 			<div id="header-wrap">
-				<h1>Battleship</h1>
+				<!-- Get the header -->
+				<?php getHeader(); ?>
 			</div>
 			
 			<div id="nav-wrap">

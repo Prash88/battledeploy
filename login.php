@@ -1,7 +1,18 @@
 <?php
 	
+	//Include all function calls
 	require 'constants/constants.php';
 	
+	if(DEBUG){
+		//Chrome debugger
+		require_once('includes\php\PhpConsole\PhpConsole.php');
+		PhpConsole::start();
+
+		//Chrome debugger
+		debug('test message');
+	}
+
+	//Set the title for the page
 	$meta_title = "Login";
 	
 	//Login
@@ -11,6 +22,7 @@
 	//User name placeholder
 	$login_user_value = "";
 	
+	//Messages to be displayed on page
 	$msg = NULL;
 	
 	//Array to hold any errors. 
@@ -31,8 +43,10 @@
 	//If there is post data, then the user has submitted a login form.	
 	if(isset($_POST['login']))
 	{
-		//DEBUG
-		echo "<b>login Post Data Found</b><br />";
+		if(DEBUG){
+			//DEBUG
+			echo "<b>login Post Data Found</b><br />";
+		}
 		
 		//Grab data from the POST array from the form.
 		$username = filter($_POST['login_user_name']);
@@ -66,14 +80,17 @@
 			//Get user data for updating
 			$q = mysql_query("SELECT id, user_name, user_level, pwd FROM ".USERS." WHERE user_name = '$username' ") or die(mysql_error());
 			
-			//DEBUG
-			echo "<b>login selected user </b><br />";
-			
+			if(DEBUG){
+				//DEBUG
+				echo "<b>login selected user </b><br />";
+			}
 			
 			if(mysql_num_rows($q) > 0)
 			{
-				//DEBUG
-				echo "<b>User found</b><br />";
+				if(DEBUG){
+					//DEBUG
+					echo "<b>User found</b><br />";
+				}
 				
 				//Get the username a encrypted password from the database.
 				list($id, $user_name, $user_level, $pwd) = mysql_fetch_row($q);
@@ -95,10 +112,12 @@
 				}
 				//Username and password match, setup security and session info
 				else{
+					if(DEBUG){
+						//DEBUG
+						echo "<b>Password Correct</b><br />";
+					}
 					
-					//DEBUG
-					echo "<b>Password Correct</b><br />";
-					
+					//Login was successfull, inform the user.
 					echo "<script>$(function(){";
 					echo "$('<b>Success!</b><br  />').hide().appendTo('#success').fadeIn(1000);";
 					echo "});</script>";
@@ -112,6 +131,8 @@
 					//update the timestamp and key for session verification
 					$stamp = time();
 					$ckey = generate_key();
+					
+					//Update the user database with the latest login information
 					mysql_query("UPDATE ".USERS." SET `ctime`='$stamp', `ckey` = '$ckey', `num_logins` = num_logins+1, `last_login` = now() WHERE id='$id'") or die(mysql_error());
 					
 					//Assign session variables to information specific to user
@@ -121,6 +142,7 @@
 					$_SESSION['stamp'] = $stamp;
 					$_SESSION['key'] = $ckey;
 					$_SESSION['logged'] = true;
+					
 					//And some added encryption for session security
 					$_SESSION['HTTP_USER_AGENT'] = md5($_SERVER['HTTP_USER_AGENT']);
 					
@@ -132,6 +154,7 @@
 					
 						header("Location: ".BASE."/admin.php");
 					}
+					//If user is not admin, direct to the home page
 					else{
 						header("Location: ".BASE."/home.php");
 					}
@@ -143,8 +166,10 @@
 			else{
 				$err[] = "Username doesn\'t exist.";
 				
-				//DEBUG
-				echo "<b>Username doesn't exist </b><br />";
+				if(DEBUG){
+					//DEBUG
+					echo "<b>Username doesn't exist </b><br />";
+				}
 			}
 		
 		
@@ -194,9 +219,26 @@
 				}
 			echo "});</script>";
 		}
+		
+		
 	}
 
-
+	//If there is GET data, then a redirect has set a message for the login page to display	
+	if(isset($_GET['msg']))
+	{
+		//Get the message and store as $msg
+		$msg = $_GET['msg'];
+		
+		if(DEBUG){
+			//DEBUG
+			debug('msg recieved: $msg');
+		}
+		
+		//Display $msg in the success section of the page
+		echo "<script>$(function(){";
+		echo "$('<b>$msg</b><br />').hide().appendTo('#success').fadeIn(1000).fadeOut(3000);\n";
+		echo "});</script>";
+	}
 
 	if(isset($_POST['password']))
 	{
@@ -211,7 +253,8 @@
 		<div id="page-wrap">
 			
 			<div id="header-wrap">
-				<h1>Battleship</h1>
+				<!-- Get the header -->
+				<?php getHeader(); ?>
 			</div>
 			
 			<div id="nav-wrap">

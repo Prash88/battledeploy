@@ -17,6 +17,9 @@ define ("BASE", "http://".$_SERVER['HTTP_HOST']."/HCI573/GitHub/battledeploy/");
 
 define("USERS", "users");
 
+//Used for debug purposes
+define("DEBUG", 0);
+
 $loginPage = "login.php";
 
 // DB login information
@@ -94,6 +97,16 @@ function return_meta_mobile($title=''){
         
 	echo $meta;
 	
+}
+
+function getHeader(){
+	echo "<h1>Battleship</h1>";
+	
+	//If there is a user logged in, allow a logout link
+	if(isset($_SESSION['user_name'])){
+		echo '<a href="'.BASE.'logout.php?success=1">logout</a>';
+	}
+
 }
 
 /*Function to super sanitize anything going near our DBs*/
@@ -194,16 +207,18 @@ function logout($lm = NULL)
 		session_unset();
 		session_destroy();
 
+	//If there is a message set, relay the message to the login page
 	if(isset($lm))
 	{
-		header("Location: ".SITE_BASE."/login.php?msg=".$lm);
+		header("Location: ".BASE."/login.php?msg=".$lm);
 	}
 	else
 	{
-		header("Location: ".SITE_BASE."/login.php");
+		header("Location: ".BASE."/login.php");
 	}
 }
 
+//Function to return admin=true or admin=false
 function is_admin()
 {
 	if(isset($_SESSION['user_level']) && $_SESSION['user_level'] >= 5)
