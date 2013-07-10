@@ -1,282 +1,272 @@
 <?php
-	
-	//Include all function calls
-	require 'constants/constants.php';
-	
-	if(DEBUG){
-		//Chrome debugger
-		require_once('includes\php\PhpConsole\PhpConsole.php');
-		PhpConsole::start();
+require 'includes/constant/config.inc.php';
+include("includes/facebook-php-sdk/src/facebook.php");
 
-		//Chrome debugger
-		debug('test message');
-	}
+$facebook = new Facebook(array(
+ 'appId' => appID,
+ 'secret' => appSecret
+));
 
-	//Set the title for the page
-	$meta_title = "Login";
-	
-	//Login
-	$username = "User Name";
-	$password = "Password";
-	
-	//User name placeholder
-	$login_user_value = "";
-	
-	//Messages to be displayed on page
-	$msg = NULL;
-	
-	//Array to hold any errors. 
-	$err = array();
-	$success = array();
-	
-?>
-
-
-<html>
-	<?php 
-		//Common meta data file
-		return_meta($meta_title);
+if(!empty($_GET['msg'])){
+if($_GET['msg']=="login"){
+$userId = $facebook->getUser();
+if (!empty($userId)) {
+    try {
+        // Proceed knowing you have a logged in user who's authenticated.
+        $user_profile = $facebook->api('/me?fields=id,name,email,first_name');
+        $email = $user_profile['email'];
+        $name = $user_profile['name'];
+        $id = $user_profile['first_name'];
+        $uid = $user_profile['id'];
+        $date = date('Y-m-d');
+		$user_ip = $_SERVER['REMOTE_ADDR'];
+		$activation_code = rand(1000,9999);
+		$pic = addslashes(file_get_contents("http://graph.facebook.com/".$uid."/picture"));
+		$passw = hash_pass('dummy');
 		
-		//Try to create the user table if it doesn't exist
-		create_table();
-		
-	//If there is post data, then the user has submitted a login form.	
-	if(isset($_POST['login']))
-	{
-		if(DEBUG){
-			//DEBUG
-			echo "<b>login Post Data Found</b><br />";
-		}
-		
-		//Grab data from the POST array from the form.
-		$username = filter($_POST['login_user_name']);
-		$password = filter($_POST['login_password']);
-	
-		//Get current date
-		$date = date('Y-m-d');
-		
-		//Get user IP
-		$user_ip = $_SERVER['REMOTE_ADDR'];	
-		
-		//If any variable information is incorrect, set an error.
-		if(empty($username))
-		{ 
-			$err[] = "You must enter a username";
-		}
-		else if(strlen($username) < 4){
-			$err[] = "Username is too short";
-		}
-		if(empty($password) || strlen($password) < 4)
+        $qr = mysql_query("SELECT usr_pwd, id, approved FROM ".USERS." WHERE user_name = '$email' OR usr_email = AES_ENCRYPT('$email', '$salt')") or die(mysql_error());
+		if($qr && mysql_num_rows($qr) > 0)
 		{
-			$err[] = "Your password is too short.";
+			list($password, $uid, $app) = mysql_fetch_row($qr);
+			
+				$usr_info = mysql_query("SELECT id, full_name, user_name, user_level, photo, last_logout FROM ".USERS." WHERE id = '$uid' LIMIT 1") or die("Unable to get user info");
+				list($id1, $name1, $username1, $level1, $photo1, $lastlogout1) = mysql_fetch_row($usr_info);
+				
+				session_start();
+				//update the timestamp and key for session verification
+				$stamp1 = time();
+				$ckey1 = generate_key();
+				mysql_query("UPDATE ".USERS." SET `ctime`='$stamp1', `ckey` = '$ckey1', `num_logins` = num_logins+1, `last_login` = now() WHERE id='$id1'") or die(mysql_error());
+				//Assign session variables to information specific to user
+				setcookie('user_id',$id1);
+				setcookie('fullname',$name1);
+				setcookie('user_name',$username1);
+				setcookie('user_level',$level1);
+				setcookie('stamp',$stamp1);
+				setcookie('key',$ckey1);
+				setcookie('logged',true);
+				setcookie('lastlogout',$lastlogout1);
+				//And some added encryption for session security
+				setcookie('HTTP_USER_AGENT',md5($_SERVER['HTTP_USER_AGENT']));
+
+				//Build a message for display where we want it
+				$msg = "Logged in successfully!";
+
+				//redirecdt to the user section
+				header("Location: http://battledeploy.aws.af.cm/users");
 		}
-		
-		
-
-		//If there are no data errors, try to read from the database.
-		if(empty($err))
-		{
+		else{
+			$qr1 = mysql_query("INSERT INTO ".USERS." (full_name, user_name, usr_pwd, usr_email, date, users_ip, activation_code, photo, user_level, approved) VALUES ('$name', '$id', '$passw', AES_ENCRYPT('$email', '$salt'), '$date', '$user_ip', '$activation_code', '{$pic}', '1', '1')", $link) or die("Unable to insert data");
 			
-			//Get user data for updating
-			$q = mysql_query("SELECT id, user_name, user_level, pwd FROM ".USERS." WHERE user_name = '$username' ") or die(mysql_error());
-			
-			if(DEBUG){
-				//DEBUG
-				echo "<b>login selected user </b><br />";
-			}
-			
-			if(mysql_num_rows($q) > 0)
-			{
-				if(DEBUG){
-					//DEBUG
-					echo "<b>User found</b><br />";
-				}
-				
-				//Get the username a encrypted password from the database.
-				list($id, $user_name, $user_level, $pwd) = mysql_fetch_row($q);
-				
-				//Encrypt the entered password to compaire to the database.
-				$encrypt_pass = hash_pass($password);
-				
-				//If user entered wrong password.
-				if($encrypt_pass != $pwd){
-				
-				
-					echo "<script>$(function(){";
-					echo "$('<b>Password Incorrect</b><br  />').hide().appendTo('#error').fadeIn(1000);";
-					echo "});</script>";
-					
-					//retain username in username input field
-					$login_user_value = $user_name;
-					
-				}
-				//Username and password match, setup security and session info
-				else{
-					if(DEBUG){
-						//DEBUG
-						echo "<b>Password Correct</b><br />";
-					}
-					
-					//Login was successfull, inform the user.
-					echo "<script>$(function(){";
-					echo "$('<b>Success!</b><br  />').hide().appendTo('#success').fadeIn(1000);";
-					echo "});</script>";
-					
-					//Start session
-					session_start();
-					
-					//REALLY start new session (wipes all prior data)
-					session_regenerate_id(true);
-
-					//update the timestamp and key for session verification
-					$stamp = time();
-					$ckey = generate_key();
-					
-					//Update the user database with the latest login information
-					mysql_query("UPDATE ".USERS." SET `ctime`='$stamp', `ckey` = '$ckey', `num_logins` = num_logins+1, `last_login` = now() WHERE id='$id'") or die(mysql_error());
-					
-					//Assign session variables to information specific to user
-					$_SESSION['user_id'] = $id;
-					$_SESSION['user_name'] = $user_name;
-					$_SESSION['user_level'] = $user_level;
-					$_SESSION['stamp'] = $stamp;
-					$_SESSION['key'] = $ckey;
-					$_SESSION['logged'] = true;
-					
-					//And some added encryption for session security
-					$_SESSION['HTTP_USER_AGENT'] = md5($_SERVER['HTTP_USER_AGENT']);
-					
-					//Build a message for display where we want it
-					$msg = "Logged in successfully!";
-					
-					//If user is admin, direct to admin page
-					if(is_admin()){
-					
-						header("Location: ".BASE."/admin.php");
-					}
-					//If user is not admin, direct to the home page
-					else{
-						header("Location: ".BASE."/home.php");
-					}
-					
-				}
-				
-			}
-			//If my query didn't go through, the table must exist
-			else{
-				$err[] = "Username doesn\'t exist.";
-				
-				if(DEBUG){
-					//DEBUG
-					echo "<b>Username doesn't exist </b><br />";
-				}
-			}
-		
-		
-		
-		
-		
-		
-		/*
-			$password = hash_pass($password);
-
-			$q1 = mysql_query("INSERT INTO ".USERS." (user_name, pwd, email, date, user_ip, activation_code) VALUES ('$username', '$password', AES_ENCRYPT('$email', '$salt'), '$date', '$user_ip', '$activation_code')", $link) or die("Unable to insert data");
-
 			//Generate rough hash based on user id from above insertion statement
-			$user_id = mysql_insert_id($link); //returns the primary id of the last entry we put into the database
-			$md5_id = md5($user_id); //hash the id
-			//cmlewis - no need of r md5 hashed id
-			//mysql_query("UPDATE ".USERS." SET md5_id='$md5_id' WHERE id='$user_id'");
+			$user_id = mysql_insert_id($link);
+			$md5_id = md5($user_id);
+			mysql_query("UPDATE ".USERS." SET md5_id='$md5_id' WHERE id='$user_id'");
+			
+			$qr = mysql_query("SELECT usr_pwd, id, approved FROM ".USERS." WHERE user_name = '$email' OR usr_email = AES_ENCRYPT('$email', '$salt')") or die(mysql_error());
+			list($password, $uid, $app) = mysql_fetch_row($qr);
+			
+			$usr_info = mysql_query("SELECT id, full_name, user_name, user_level, photo, last_logout FROM ".USERS." WHERE id = '$uid' LIMIT 1") or die("Unable to get user info");
+			list($id1, $name1, $username1, $level1, $photo1, $lastlogout1) = mysql_fetch_row($usr_info);
+				
+			session_start();
+			//update the timestamp and key for session verification
+			$stamp1 = time();
+			$ckey1 = generate_key();
+			mysql_query("UPDATE ".USERS." SET `ctime`='$stamp1', `ckey` = '$ckey1', `num_logins` = num_logins+1, `last_login` = now() WHERE id='$id1'") or die(mysql_error());
+			//Assign session variables to information specific to user
+			setcookie('user_id',$id1);
+			setcookie('fullname',$name1);
+			setcookie('user_name',$username1);
+			setcookie('user_level',$level1);
+			setcookie('stamp',$stamp1);
+			setcookie('key',$ckey1);
+			setcookie('logged',true);
+			setcookie('lastlogout',$lastlogout1);
+			//And some added encryption for session security
+			setcookie('HTTP_USER_AGENT',md5($_SERVER['HTTP_USER_AGENT']));
 
-			//Change page title
-			$meta_title = "Registration successful!";
-			//Tell user registration worked
-			$msg = "Registration successful!";
-			*/
-			//Build a message to email for confirmation
-			/*$message = "<p>Hi ".$fullname."!</p>
-					<p>Thank you for registering with us. Here are your login details...<br />
+			//Build a message for display where we want it
+			$msg = "Logged in successfully!";
 
-					User ID: ".$username."<br />
-					Email: ".$email."<br />
-					Password: ".$_POST['password']."</p>
-
-					<p>You must activate your account before you can actually do anything:<br />
-					".SITE_BASE."/users/activate.php?user=".$md5_id."&activ_code=".$activation_code."</p>
-
-					<p>Thank You<br />
-
-					Administrator<br />
-					".SITE_BASE."</p>";
-
-			//Call our config.inc.php msg to send the above msg to user
-			send_msg($email, $msg, $message);*/
+			//redirecdt to the user section
+			header("Location: http://battledeploy.aws.af.cm/users");
 		}
-		if(!empty($err)){
-			echo "<script>$(function(){";
-				foreach ($err as &$errorval) {
-					echo "$('<b>$errorval</b><br />').hide().appendTo('#error').fadeIn(1000);\n";
-				}
-			echo "});</script>";
-		}
-		
-		
-	}
+	
+    } catch (FacebookApiException $e) {
+       $userId = null;
+    }
+}
+}
+}
+//Pre-assign our variables to avoid undefined indexes
+$username = NULL;
+$pass2 = NULL;
+$msg = NULL;
+$err = array();
 
-	//If there is GET data, then a redirect has set a message for the login page to display	
-	if(isset($_GET['msg']))
+ 
+//See if form was submitted, if so, execute...
+if(isset($_POST['login']))
+{
+
+	//Assigning vars and sanitizing user input
+	$username = filter($_POST['user']);
+	$pass2 = filter($_POST['pass']);
+
+	if(empty($username) || strlen($username) < 4)
 	{
-		//Get the message and store as $msg
-		$msg = $_GET['msg'];
-		
-		if(DEBUG){
-			//DEBUG
-			debug('msg recieved: $msg');
-		}
-		
-		//Display $msg in the success section of the page
-		echo "<script>$(function(){";
-		echo "$('<b>$msg</b><br />').hide().appendTo('#success').fadeIn(1000).fadeOut(3000);\n";
-		echo "});</script>";
+		$err[] = "You must enter a username";
 	}
-
-	if(isset($_POST['password']))
+	if(empty($pass2) || strlen($pass2) < 4)
 	{
-		$pass2 = $_POST['password'];
+		$err[] = "You seem to have forgotten your password.";
 	}
+	//Select only ONE password from the db table if the username = username, or the user input email (after being encrypted) matches an encrypted email in the db
+	$q = mysql_query("SELECT usr_pwd, id, approved FROM ".USERS." WHERE user_name = '$username' OR usr_email = AES_ENCRYPT('$username', '$salt')") or die(mysql_error());
+
+	if(!$q || mysql_num_rows($q) == 0)
+	{
+		$err[] = "Invalid User/Password";
+	}
+	else {
+		//Select only the password if a user matched
+		list($pass, $userid, $approved) = mysql_fetch_row($q);
 		
-		
+		if($approved == 0)
+		{
+			$err[] = "You must activate your account, and may do so <a href=\"users/activate.php\">here</a>";
+		}
+	}
+	if(empty($err))
+	{
+		//If someone was found, check to see if passwords match
+		if(mysql_num_rows($q) > 0)
+		{
+			if(hash_pass($pass2) === $pass)
+			{
+
+				$user_info = mysql_query("SELECT id, full_name, user_name, user_level, photo, last_logout FROM ".USERS." WHERE id = '$userid' LIMIT 1") or die("Unable to get user info");
+				list($id, $name, $username, $level, $photo, $lastlogout) = mysql_fetch_row($user_info);
+				
+				session_start();
+				//update the timestamp and key for session verification
+				$stamp = time();
+				$ckey = generate_key();
+				mysql_query("UPDATE ".USERS." SET `ctime`='$stamp', `ckey` = '$ckey', `num_logins` = num_logins+1, `last_login` = now() WHERE id='$id'") or die(mysql_error());
+				//Assign session variables to information specific to user
+				setcookie('user_id',$id);
+				setcookie('fullname',$name);
+				setcookie('user_name',$username);
+				setcookie('user_level',$level);
+				setcookie('stamp',$stamp);
+				setcookie('key',$ckey);
+				setcookie('logged',true);
+				setcookie('lastlogout',$lastlogout);
+				//And some added encryption for session security
+				setcookie('HTTP_USER_AGENT',md5($_SERVER['HTTP_USER_AGENT']));
+
+				//Build a message for display where we want it
+				$msg = "Logged in successfully!";
+
+				//redirecdt to the user section
+				header("Location: http://battledeploy.aws.af.cm/users");
+			} //end passwords matched
+			else
+			{
+				//Passwords don't match, issue an error
+				$err[] = "Invalid User/Password";
+			}
+		} //end if user found
+		else
+		{
+			//No rows found in DB matching username or email, issue error
+			$err[] = "This user was not found in the database.";
+		}
+	} //end if no error
+}  //end form posted
+
+return_meta("Log in to your account");
+?>
+<script>
+$(document).ready(function(){
+	$("#login_form").validate();
+});
+</script>
+</head>
+<body>
+<div class="well">
+
+	<?php include 'includes/constant/nav.inc.php'; ?>
+
+	<?php
+	//Show message if isset
+	if(isset($msg) || !empty($_GET['msg']))
+	{
+		if(!empty($_GET['msg']))
+		{
+			$msg = $_GET['msg'];
+		}
+		echo '<div class="success">'.$msg.'</div>';
+	}
+	//Show error message if isset
+	if(!empty($err))
+	{
+		echo '<div class="err">';
+		foreach($err as $e)
+		{
+		echo $e.'<br />';
+		}
+		echo '</div>';
+	}
 	?>
-	
-	<body>
-	
-		<div id="page-wrap">
-			
-			<div id="header-wrap">
-				<!-- Get the header -->
-				<?php getHeader(); ?>
-			</div>
-			
-			<div id="nav-wrap">
-			</div>
-			
-			<div id="content-wrap">
-				<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="login_form">
-				  <fieldset>
-					<label>Username</label>
-					<input type="text" name="login_user_name" class="required" placeholder="eg. irock22" value="<?php echo $login_user_value; ?>">
-					
-					<label>Password</label>
-					<input type="text" name="login_password" class="required" placeholder="eg. password1234">
-					
-					<button id="login_submit" type="submit" name="login" class="btn btn-primary">Login</button><span><a id="login_register_link" href="<?php echo BASE.'register.php' ?>">Register</a></span>
-				  </fieldset>
-				</form>
 
-				<div id="error"></div>
-				<div id="success"></div>
-			</div>
-		</div>
-	</body>
+	<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="login_form" class="form-horizontal">
+	<table cellpadding="5" cellspacing="5" border="0" >
+	<tr>
+	<td>Username/Email:</td>
+	<td><input type="text" name="user" value="<?php echo stripslashes($username); ?>" class="required" /></td>
+	</tr><tr>
+	<td>Password:</td>
+	<td><input type="password" name="pass" value="<?php echo stripslashes($pass2); ?>" class="required" /></td>
+	</tr>
+	<tr>
+	<td><input type="submit" class="btn btn-info	" name="login" value="Login" /></td>
+	<td><fb:login-button perms="email" autologoutlink="true" size="large">Sign In With Facebook</fb:login-button></td>
+	</tr>
+	</table>
+	</form>
 	
+ <script>
+ window.fbAsyncInit = function() {
+ FB.init({
+ appId : "432951340134728",
+ status : true,
+ cookie : true,
+ xfbml : true,
+ oauth : true,
+ });
+ 
+FB.Event.subscribe('auth.login', function(response) {
+	if(!(window.location=="http://battledeploy.aws.af.cm/login.php?msg=loggedout")){
+	 	window.location="http://battledeploy.aws.af.cm/login.php?msg=login";
+	}
+ });
+
+FB.Event.subscribe('auth.logout', function(response) {
+	 window.location="http://battledeploy.aws.af.cm/login.php";
+	
+ });
+ 
+ };
+ 
+(function(d){
+ var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+ js = d.createElement('script'); js.id = id; js.async = true;
+ js.src = "//connect.facebook.net/en_US/all.js";
+ d.getElementsByTagName('head')[0].appendChild(js);
+ }(document));
+</script>
+</div>
+</body>
 </html>
